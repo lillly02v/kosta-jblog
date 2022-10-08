@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="blog">
+	<select id="getByIdAndPassword" parameterType='map' resultType="usersvo">
+	<![CDATA[
+		select userNo,userName,id 
+		from users 
+		where id=#{id} and password=#{password}
+	]]>
+	</select>
+	
+	<select id="getById" parameterType='String' resultType="blogvo">
+	<![CDATA[
+		select b.userNo,blogTitle,logoFile
+		from users u, blog b 
+		where u.userNo = b.userNo 
+		and u.id=#{id}
+	]]>
+	</select>
+	
+	<select id="getCate" parameterType='Long' resultType="categoryvo">
+	<![CDATA[
+		select cateNo, cateName
+		from category
+		where userNo = #{userNo}
+		order by cateNo
+	]]>
+	</select>
+	
+	<select id="getPostList" parameterType='int' resultType="postvo">
+	<![CDATA[
+		select postNo, cateNo, postTitle, postContent, to_char(regDate,'YYYY/MM/DD') as regDate from post
+		where cateNo = #{cateNo}
+		order by postNo desc
+	]]>
+	</select>
+	
+	<!-- 수정함 -->
+	<select id="getFirstPostList" parameterType='Long' resultType="postvo">
+	<![CDATA[
+		select postNo, p.cateNo,postTitle, postContent, to_char(p.regDate,'YYYY/MM/DD') as regDate 
+		from CATEGORY c , POST p 
+		where c.cateNo = p.cateNo 
+		AND c.cateNo = (SELECT min(cateNo) FROM category where userNo = #{userNo})
+		order by postNo desc
+	]]>
+	</select>
+	
+	<select id="getPostContent" parameterType='int' resultType="postvo">
+	<![CDATA[
+		select postContent, postTitle
+		from post
+		where postNo = #{postNo}
+	]]>
+	</select>
+	
+	<select id="getFirstPostContent" parameterType='Long' resultType="postvo">
+	<![CDATA[
+		select postContent, postTitle
+		from post
+		where postNo = (select max(postNo) from post p, category c
+						where p.cateNo = c.cateNo
+						and c.cateNo = (select min(cateNo) from category where userNo = #{userNo})
+						)
+	]]>
+	</select>
+	
+	<select id="getUserNo" parameterType='String' resultType="Long">
+	<![CDATA[
+		SELECT userNo FROM users WHERE Id = #{userId}
+	]]>
+	</select>
+	
+	<select id="getReply" parameterType='Long' resultType="commentsvo">
+	<![CDATA[
+		SELECT cmtNo, postNo, userNo, cmtContent, to_char(regDate, 'YYYY/MM/DD') as regDate, coName from COMMENTS
+		where postNo = (select max(postNo) from category c, post p
+						where c.cateNo = p.cateNo
+						AND c.cateNo = (SELECT min(cateNo) FROM category WHERE userNO = #{usrNo})
+						)
+		order by cmtNo desc
+	]]>
+	</select>
+	
+	<select id="getCommentsList" parameterType='int' resultType="commentsvo">
+	<![CDATA[
+		SELECT cmtNo, postNo, userNo, cmtContent, to_char(regDate, 'YYYY/MM/DD') as regDate, coName from COMMENTS
+		where postNo = #{postNo} order by cmtNo desc
+	]]>
+	</select>
+	
+	<insert id="addReply" parameterType="commentsvo">
+   <selectKey keyProperty="cmtNo" resultType="int" order="BEFORE"><!-- 본 쿼리가 먼저 실행 -->
+   <![CDATA[
+      SELECT seq_comments_no.nextval from dual
+   ]]>
+   </selectKey>
+   <![CDATA[
+   	 insert into COMMENTS 
+   	 values(#{cmtNo}, #{postNo}, #{userNo}, #{cmtContent}, sysdate, #{coName})
+   ]]>
+   </insert>
+   
+   <select id="firstReply" resultType="commentsvo">
+	<![CDATA[
+		SELECT cmtNo, postNo, userNo, cmtContent, to_char(regDate, 'YYYY/MM/DD') as regDate, coName from COMMENTS
+		where cmtNo=(select max(cmtNo) from comments)
+	]]>
+	</select>
+	
+	<select id="getUserId" parameterType="Long" resultType="String">
+	<![CDATA[
+		SELECT id FROM USERS u , BLOG b 
+		WHERE u.userNo = b.userNo
+		AND b.userNo = #{userNo}
+	]]>
+	</select>
+	
+</mapper>

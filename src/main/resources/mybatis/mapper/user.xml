@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="user">
+	<select id="getById" resultType="usersvo" parameterType="string">
+	<![CDATA[
+		select userNo,id,userName,password,joinDate 
+		from users
+		where id = #{id}
+	]]>
+	</select>
+	
+	<insert id="insert" parameterType="usersvo">
+		<selectKey keyProperty="userNo" resultType="long" order="BEFORE"><!-- 본 쿼리가 먼저 실행 -->
+		<![CDATA[
+			 SELECT seq_users_no.nextval from dual
+		]]>
+		</selectKey>
+	<![CDATA[
+		insert into users (userNo,id,userName,password,joinDate)
+		values(#{userNo},#{id},#{userName},#{password},sysdate)
+	]]>
+	</insert>
+	
+	<insert id="insertBoard" parameterType="usersvo">
+	<![CDATA[
+		insert into blog (userNo,blogTitle,logoFile)
+		values(#{userNo},concat(#{userName},'의 블로그입니다.'),'spring-logo.jpg')
+	]]>
+	</insert>
+	
+	<select id="getByIdAndPassword" parameterType='map' resultType="usersvo">
+	<![CDATA[
+		select userNo,userName,id 
+		from users 
+		where id=#{id} and password=#{password}
+	]]>
+	</select>
+	
+	<insert id="defaultCategory" parameterType="categoryvo">
+		<selectKey keyProperty="cateNo" resultType="int" order="BEFORE"><!-- 본 쿼리가 먼저 실행 -->
+		<![CDATA[
+			 SELECT seq_category_no.nextval from dual
+		]]>
+		</selectKey>
+	<![CDATA[
+		insert into category 
+		values(#{cateNo},#{userNo},'미분류','기본으로 만들어지는 카테고리 입니다.',sysdate)
+	]]>
+	</insert>
+	
+	<select id="getUserNo" parameterType='usersvo' resultType="Long">
+	<![CDATA[
+		select userNo
+		from users 
+		where id=#{id}
+	]]>
+	</select>
+</mapper>
