@@ -67,7 +67,7 @@ public class BlogController {
 	@RequestMapping(value="/{userId}/getCommentsList",method = RequestMethod.GET)
 	public List<CommentsVo> getCommentsList(@PathVariable("userId") String userId, @RequestParam("postNum") String postNum) {
 		int postNo = Integer.parseInt(postNum);
-		System.out.println("getCommentList"+postNo);
+		System.out.println("getCommentList");
 		return blogService.getCommentsList(postNo);
 	}
 	
@@ -86,7 +86,17 @@ public class BlogController {
 		return blogService.addReply(commentsvo);
 	}
 	
-	
+	@ResponseBody
+	@RequestMapping(value="/{userNo}/cmtDelete",method = RequestMethod.POST)
+	public List<CommentsVo> cmtDelete(@PathVariable("userNo") Long userNo, 
+		@RequestParam("cmtNum") String cmtNum, @RequestParam("PostNum") String PostNum) {
+		int cmtNo = Integer.parseInt(cmtNum);
+		int postNo = Integer.parseInt(PostNum);
+		CommentsVo cmtVo = new CommentsVo();
+		cmtVo.setCmtNo(cmtNo);
+		cmtVo.setPostNo(postNo);
+		return blogService.cmtDelete(cmtVo);
+	}
 
 	
 }

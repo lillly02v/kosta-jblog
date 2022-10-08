@@ -65,5 +65,10 @@ public class BlogDao {
 	public String getUserId(Long userNo) {
 		return sqlSession.selectOne("blog.getUserId", userNo);
 	}
+	
+	public List<CommentsVo> cmtDelete(CommentsVo cmtVo){
+		sqlSession.delete("blog.cmtDelete", cmtVo);
+		return sqlSession.selectList("blog.deletedCmtList",cmtVo);
+	}
 
 }

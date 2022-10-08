@@ -117,4 +117,17 @@
 	]]>
 	</select>
 	
+	<delete id="cmtDelete" parameterType="commentsvo">
+      <![CDATA[            
+         DELETE FROM COMMENTS WHERE cmtNo =#{cmtNo}
+      ]]>
+   </delete>
+   
+   <select id="deletedCmtList" parameterType='commentsvo' resultType="commentsvo">
+	<![CDATA[
+		SELECT cmtNo, postNo, userNo, cmtContent, to_char(regDate, 'YYYY/MM/DD') as regDate, coName from COMMENTS
+		where postNo = #{postNo} order by cmtNo desc
+	]]>
+	</select>
+	
 </mapper>

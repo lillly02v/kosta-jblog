@@ -60,4 +60,8 @@ public class BlogService {
 	public String getUserId(Long userNo) {
 		return blogDao.getUserId(userNo);
 	}
+	
+	public List<CommentsVo> cmtDelete(CommentsVo cmtVo){
+		return blogDao.cmtDelete(cmtVo);
+	}
 }

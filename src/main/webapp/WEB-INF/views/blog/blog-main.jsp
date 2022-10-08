@@ -14,8 +14,14 @@
 	$(document).ready(function(){
 		var index=0;
 		var cateNo=0;
+		var cmtIndex = 0;
+    	var cmtNo = 0;
+    	var postNum = 0;
 		var authUser = sessionStorage.getItem("authUser");
 		$('.cateNo').hide();
+		$('.cmtNo').hide();
+		$.ajaxSetup({cache:false});
+		
 		$(".cateName").off('click').on('click',function(e){
 			e.preventDefault();
 			index = $(".cateName").index(this);
@@ -28,7 +34,16 @@
 		$(".replySave").off('click').on('click',function(e){
 			e.preventDefault();
 			replyFirstSave();
+			$('.cmtNo').hide();
 		})
+		
+		$(document).off('click',".cmtDelete").on("click", ".cmtDelete", function(){
+    		cmtIndex = $(".cmtDelete").index(this);
+    		cmtNo = Number($(".cmtNo:eq("+cmtIndex+")")[0].innerHTML);
+    		firstDeleteCmt();
+    		$('.cmtNo').hide();
+		})
+		
     	function cateNameClick(){
     		console.log("cateNo"+cateNo);
     		$.ajax({
@@ -75,6 +90,14 @@
    				getPostContent();
    				getCommentList();
    				replySaveClick();
+   				$('.cmtNo').hide();
+   				$(document).off('click',".cmtDelete").on("click", ".cmtDelete", function(){
+   		    		cmtIndex = $(".cmtDelete").index(this);
+   		    		cmtNo = Number($(".cmtNo:eq("+cmtIndex+")")[0].innerHTML);
+   		    		postNum = $(".postNo:eq("+index+")")[0].innerHTML;
+   		    		cmtDelete();
+   		    		$('.cmtNo').hide();
+   				})
    			})
    		}
 	    	
@@ -120,9 +143,16 @@
 						for(var i=0; i<obj.length;i++){
 							console.log(obj[i]);
 							commentContent += "<tr class='commentTr'>"
+							commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
 							commentContent += "<td>"+obj[i]['coName']+"</td>"
 							commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
 							commentContent += "<td>"+obj[i]['regDate']+"</td>"
+							var userNo = '${authUser.userNo}';
+							if(userNo!=''){
+								if(userNo==${blogVo.userNo}){
+									commentContent += "<td class='cmtDelete'>X</td>"
+								}
+							}
 							commentContent += "</tr>"
 						}
 					commentContent += "</table>"
@@ -157,11 +187,54 @@
 					console.log(obj)
 					var commentContent="";
 						commentContent += "<tr>";
+						commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
 						commentContent += "<td>"+obj['coName']+"</td>"
 						commentContent += "<td>"+obj['cmtContent']+"</td>"
 						commentContent += "<td>"+obj['regDate']+"</td>"
+						var userNo = '${authUser.userNo}';
+						if(userNo!=''){
+							if(userNo==${blogVo.userNo}){
+								commentContent += "<td class='cmtDelete'>X</td>"
+							}
+						}
 						commentContent += "</tr>";
 						$(".commentTable").prepend(commentContent);
+				},
+				error : function(xhr,status,error){
+					alert(error+"에러");
+				}
+			})
+    	}
+    	
+    	function cmtDelete(){
+    		postNum = postNum;
+    		$.ajax({
+				type : "POST",
+				data : {
+					cmtNum: cmtNo,
+					PostNum: postNum
+				},
+				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/cmtDelete",
+				async: false,
+				success : function(obj){
+					console.log(obj)
+					$('.commentTable').empty();
+					for(var i=0; i<obj.length;i++){
+						var commentContent="";
+						commentContent += "<tr>";
+						commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
+						commentContent += "<td>"+obj[i]['coName']+"</td>"
+						commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
+						commentContent += "<td>"+obj[i]['regDate']+"</td>"
+						var userNo = '${authUser.userNo}';
+						if(userNo!=''){
+							if(userNo==${blogVo.userNo}){
+								commentContent += "<td class='cmtDelete'>X</td>"
+							}
+						}
+						commentContent += "</tr>";
+						$(".commentTable").append(commentContent);
+					}
 				},
 				error : function(xhr,status,error){
 					alert(error+"에러");
@@ -175,8 +248,17 @@
 	    	postNo = $(".postNo:eq("+index+")")[0].innerHTML;
 	    	e.preventDefault();
 	    	getPostContent();
+	    	$('.cmtNo').hide();
 	    	getCommentList();
 	    	replySaveClick();
+	    	$('.cmtNo').hide();
+	    	$(document).off('click',".cmtDelete").on("click", ".cmtDelete", function(){
+	    		cmtIndex = $(".cmtDelete").index(this);
+	    		cmtNo = Number($(".cmtNo:eq("+cmtIndex+")")[0].innerHTML);
+	    		postNum = $(".postNo:eq("+index+")")[0].innerHTML;
+	    		cmtDelete();
+	    		$('.cmtNo').hide();
+			})
 	    });
     	function getPostContent(){
     		console.log("postNo"+postNo);
@@ -220,9 +302,16 @@
 						for(var i=0; i<obj.length;i++){
 							console.log(obj[i]);
 							commentContent += "<tr class='commentTr'>"
+							commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
 							commentContent += "<td>"+obj[i]['coName']+"</td>"
 							commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
 							commentContent += "<td>"+obj[i]['regDate']+"</td>"
+							var userNo = '${authUser.userNo}';
+							if(userNo!=''){
+								if(userNo==${blogVo.userNo}){
+									commentContent += "<td class='cmtDelete'>X</td>"
+								}
+							}
 							commentContent += "</tr>"
 						}
 					commentContent += "</table>"
@@ -238,6 +327,7 @@
 			$(".replySave").off('click').on('click',function(e){
 				e.preventDefault();
 				replySave();
+				$('.cmtNo').hide();
 			})
 		}
 				
@@ -256,12 +346,19 @@
 				success : function(obj){
 					console.log(obj)
 					var commentContent="";
-						commentContent += "<tr>";
-						commentContent += "<td>"+obj['coName']+"</td>"
-						commentContent += "<td>"+obj['cmtContent']+"</td>"
-						commentContent += "<td>"+obj['regDate']+"</td>"
-						commentContent += "</tr>";
-						$(".commentTable").prepend(commentContent);
+					commentContent += "<tr>";
+					commentContent += "<td class='cmtNo'>"+obj['cmtNo']+"</td>"
+					commentContent += "<td>"+obj['coName']+"</td>"
+					commentContent += "<td>"+obj['cmtContent']+"</td>"
+					commentContent += "<td>"+obj['regDate']+"</td>"
+					var userNo = '${authUser.userNo}';
+					if(userNo!=''){
+						if(userNo==${blogVo.userNo}){
+							commentContent += "<td class='cmtDelete'>X</td>"
+						}
+					}
+					commentContent += "</tr>";
+					$(".commentTable").prepend(commentContent);
 				},
 				error : function(xhr,status,error){
 					alert(error+"에러");
@@ -270,10 +367,11 @@
 			
     	}
     	
+    	
     	function replyFirstSave(){
     		var name = $(".name").text();
     		var replyContent = $('.replyContent')[0].value;
-    		postNo = $(".postNo:eq(0)")[0].innerHTML;
+    		var postNo = $(".postNo:eq(0)")[0].innerHTML;
     		$.ajax({
 				type : "GET",
 				data : {
@@ -287,9 +385,16 @@
 					console.log(obj)
 					var commentContent="";
 						commentContent += "<tr>";
+						commentContent += "<td class='cmtNo'>"+obj['cmtNo']+"</td>"
 						commentContent += "<td>"+obj['coName']+"</td>"
 						commentContent += "<td>"+obj['cmtContent']+"</td>"
 						commentContent += "<td>"+obj['regDate']+"</td>"
+						var userNo = '${authUser.userNo}';
+						if(userNo!=''){
+							if(userNo==${blogVo.userNo}){
+								commentContent += "<td class='cmtDelete'>X</td>"
+							}
+						}
 						commentContent += "</tr>";
 						$(".commentTable").prepend(commentContent);
 				},
@@ -299,6 +404,81 @@
 			})
 			
     	}
+    	
+    	function cmtDelete(){
+    		postNum = postNum;
+    		$.ajax({
+				type : "POST",
+				data : {
+					cmtNum: cmtNo,
+					PostNum: postNum
+				},
+				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/cmtDelete",
+				async: false,
+				success : function(obj){
+					console.log(obj)
+					$('.commentTable').empty();
+					for(var i=0; i<obj.length;i++){
+						var commentContent="";
+						commentContent += "<tr>";
+						commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
+						commentContent += "<td>"+obj[i]['coName']+"</td>"
+						commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
+						commentContent += "<td>"+obj[i]['regDate']+"</td>"
+						var userNo = '${authUser.userNo}';
+						if(userNo!=''){
+							if(userNo==${blogVo.userNo}){
+								commentContent += "<td class='cmtDelete'>X</td>"
+							}
+						}
+						commentContent += "</tr>";
+						$(".commentTable").append(commentContent);
+					}
+				},
+				error : function(xhr,status,error){
+					alert(error+"에러");
+				}
+			})
+    	}
+    	
+    	
+		postNum = Number($(".postNo:eq(0)")[0].innerHTML);
+		function firstDeleteCmt(){
+			
+    		$.ajax({
+				type : "POST",
+				data : {
+					cmtNum: cmtNo,
+					PostNum: postNum
+				},
+				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/cmtDelete",
+				async: false,
+				success : function(obj){
+					console.log(obj)
+					$('.commentTable').empty();
+					for(var i=0; i<obj.length;i++){
+						var commentContent="";
+						commentContent += "<tr>";
+						commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
+						commentContent += "<td>"+obj[i]['coName']+"</td>"
+						commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
+						commentContent += "<td>"+obj[i]['regDate']+"</td>"
+						var userNo = '${authUser.userNo}';
+						if(userNo!=''){
+							if(userNo==${blogVo.userNo}){
+								commentContent += "<td class='cmtDelete'>X</td>"
+							}
+						}
+						commentContent += "</tr>";
+						$(".commentTable").append(commentContent);
+					}
+				},
+				error : function(xhr,status,error){
+					alert(error+"에러");
+				}
+			})
+    	}
+		
 					
 
 	})
@@ -311,6 +491,9 @@
 	table td {
 		border: 1px solid gray;
 		padding: 3px;
+	}
+	.cmtDelete {
+		cursor:pointer;
 	}
 </style>
 </head>
@@ -373,10 +556,17 @@
 					<div id="commentTable">
 						<table class="commentTable">
 							<c:forEach var="commentsVo" items="${commentsVo}" step="1">
+								<c:set var="userNo" value="${authUser.userNo}" />
 								<tr class="commentTr">
+									<td class='cmtNo'>${commentsVo.cmtNo}</td>
 									<td>${commentsVo.coName}</td>
 									<td>${commentsVo.cmtContent}</td>
 									<td>${commentsVo.regDate}</td>
+									<c:if test="${!empty userNo}">
+										<c:if test="${userNo == blogVo.userNo}">
+											<td class="cmtDelete">X</td>
+										</c:if>
+									</c:if>
 								</tr>
 							</c:forEach>
 						</table>
