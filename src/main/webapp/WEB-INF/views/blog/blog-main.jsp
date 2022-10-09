@@ -17,7 +17,7 @@
 		var cmtIndex = 0;
     	var cmtNo = 0;
     	var postNum = 0;
-		var authUser = sessionStorage.getItem("authUser");
+    	var userNo = "";
 		$('.cateNo').hide();
 		$('.cmtNo').hide();
 		$.ajaxSetup({cache:false});
@@ -149,7 +149,7 @@
 							commentContent += "<td>"+obj[i]['regDate']+"</td>"
 							var userNo = '${authUser.userNo}';
 							if(userNo!=''){
-								if(userNo==${blogVo.userNo}){
+								if(userNo==obj[i]['userNo']){
 									commentContent += "<td class='cmtDelete'>X</td>"
 								}
 							}
@@ -174,12 +174,14 @@
     	function replySave(){
     		var name = $(".name").text();
     		var replyContent = $('.replyContent')[0].value;
+    		userNo = "${authUser.userNo}";
     		$.ajax({
 				type : "GET",
 				data : {
 					postNum: postNo,
 					name: name,
-					replyContent: replyContent
+					replyContent: replyContent,
+					userNum: userNo
 				},
 				async: false,
 				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/addReply",
@@ -193,7 +195,7 @@
 						commentContent += "<td>"+obj['regDate']+"</td>"
 						var userNo = '${authUser.userNo}';
 						if(userNo!=''){
-							if(userNo==${blogVo.userNo}){
+							if(userNo==obj['userNo']){
 								commentContent += "<td class='cmtDelete'>X</td>"
 							}
 						}
@@ -227,8 +229,9 @@
 						commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
 						commentContent += "<td>"+obj[i]['regDate']+"</td>"
 						var userNo = '${authUser.userNo}';
+						var userNo = '${authUser.userNo}';
 						if(userNo!=''){
-							if(userNo==${blogVo.userNo}){
+							if(userNo==obj[i]['userNo']){
 								commentContent += "<td class='cmtDelete'>X</td>"
 							}
 						}
@@ -308,7 +311,7 @@
 							commentContent += "<td>"+obj[i]['regDate']+"</td>"
 							var userNo = '${authUser.userNo}';
 							if(userNo!=''){
-								if(userNo==${blogVo.userNo}){
+								if(userNo==obj[i]['userNo']){
 									commentContent += "<td class='cmtDelete'>X</td>"
 								}
 							}
@@ -334,12 +337,14 @@
     	function replySave(){
     		var name = $(".name").text();
     		var replyContent = $('.replyContent')[0].value;
+    		userNo = "${authUser.userNo}";
     		$.ajax({
 				type : "GET",
 				data : {
 					postNum: postNo,
 					name: name,
-					replyContent: replyContent
+					replyContent: replyContent,
+					userNum: userNo
 				},
 				async: false,
 				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/addReply",
@@ -353,7 +358,7 @@
 					commentContent += "<td>"+obj['regDate']+"</td>"
 					var userNo = '${authUser.userNo}';
 					if(userNo!=''){
-						if(userNo==${blogVo.userNo}){
+						if(userNo==obj['userNo']){
 							commentContent += "<td class='cmtDelete'>X</td>"
 						}
 					}
@@ -372,12 +377,14 @@
     		var name = $(".name").text();
     		var replyContent = $('.replyContent')[0].value;
     		var postNo = $(".postNo:eq(0)")[0].innerHTML;
+    		userNo = "${authUser.userNo}";
     		$.ajax({
 				type : "GET",
 				data : {
 					postNum: postNo,
 					name: name,
-					replyContent: replyContent
+					replyContent: replyContent,
+					userNum: userNo
 				},
 				async: false,
 				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/addReply",
@@ -391,7 +398,7 @@
 						commentContent += "<td>"+obj['regDate']+"</td>"
 						var userNo = '${authUser.userNo}';
 						if(userNo!=''){
-							if(userNo==${blogVo.userNo}){
+							if(userNo==obj['userNo']){
 								commentContent += "<td class='cmtDelete'>X</td>"
 							}
 						}
@@ -427,7 +434,7 @@
 						commentContent += "<td>"+obj[i]['regDate']+"</td>"
 						var userNo = '${authUser.userNo}';
 						if(userNo!=''){
-							if(userNo==${blogVo.userNo}){
+							if(userNo==obj[i]['userNo']){
 								commentContent += "<td class='cmtDelete'>X</td>"
 							}
 						}
@@ -441,8 +448,10 @@
 			})
     	}
     	
-    	
-		postNum = Number($(".postNo:eq(0)")[0].innerHTML);
+    	if($(".postNo:eq(0)")[0]!=undefined){
+    		postNum = Number($(".postNo:eq(0)")[0].innerHTML);	
+    	}
+		
 		function firstDeleteCmt(){
 			
     		$.ajax({
@@ -465,7 +474,7 @@
 						commentContent += "<td>"+obj[i]['regDate']+"</td>"
 						var userNo = '${authUser.userNo}';
 						if(userNo!=''){
-							if(userNo==${blogVo.userNo}){
+							if(userNo==obj[i]['userNo']){
 								commentContent += "<td class='cmtDelete'>X</td>"
 							}
 						}
@@ -562,11 +571,14 @@
 									<td>${commentsVo.coName}</td>
 									<td>${commentsVo.cmtContent}</td>
 									<td>${commentsVo.regDate}</td>
-									<c:if test="${!empty userNo}">
-										<c:if test="${userNo == blogVo.userNo}">
+									<c:choose>
+										<c:when test="${authUser.no eq vo.user_no and authUser ne null}">
 											<td class="cmtDelete">X</td>
-										</c:if>
-									</c:if>
+										</c:when>
+										<c:otherwise>
+											<td></td>
+										</c:otherwise>
+									</c:choose>
 								</tr>
 							</c:forEach>
 						</table>

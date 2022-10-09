@@ -73,8 +73,8 @@ public class BlogController {
 	
 	@ResponseBody
 	@RequestMapping(value="/{userNo}/addReply",method = RequestMethod.GET)
-	public CommentsVo addReply(@PathVariable("userNo") Long userNo, 
-		@RequestParam("postNum") String postNum, @RequestParam("name") String name, @RequestParam("replyContent") String replyContent) {
+	public CommentsVo addReply(@RequestParam("postNum") String postNum, @RequestParam("name") String name, @RequestParam("replyContent") String replyContent, @RequestParam("userNum") String userNum) {
+		Long userNo = Long.parseLong(userNum);
 		int postNo = Integer.parseInt(postNum);
 		System.out.println("postNUm"+ postNum);
 		System.out.println("userNo"+userNo);
