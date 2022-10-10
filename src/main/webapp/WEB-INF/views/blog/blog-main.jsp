@@ -18,6 +18,7 @@
     	var cmtNo = 0;
     	var postNum = 0;
     	var userNo = "";
+    	var postNo = 0;
 		$('.cateNo').hide();
 		$('.cmtNo').hide();
 		$.ajaxSetup({cache:false});
@@ -31,21 +32,8 @@
 			postTitleClick();
 		})
 		
-		$(".replySave").off('click').on('click',function(e){
-			e.preventDefault();
-			replyFirstSave();
-			$('.cmtNo').hide();
-		})
-		
-		$(document).off('click',".cmtDelete").on("click", ".cmtDelete", function(){
-    		cmtIndex = $(".cmtDelete").index(this);
-    		cmtNo = Number($(".cmtNo:eq("+cmtIndex+")")[0].innerHTML);
-    		firstDeleteCmt();
-    		$('.cmtNo').hide();
-		})
 		
     	function cateNameClick(){
-    		console.log("cateNo"+cateNo);
     		$.ajax({
 				type : "GET",
 				data : {
@@ -55,7 +43,6 @@
 				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/blog/getPostLIst",
 				success : function(obj){
 					$(".blog-list").empty();
-					console.log(obj)
 					var resultCate="";
 					var blogcontent="";
 					if(obj.length > 0){
@@ -81,188 +68,25 @@
 			})
 		}
 		
-		var postNo = 0;
-		function postTitleClick(){
-   			$(".postTitle").off('click').on('click',function(e){
-   				e.preventDefault();
-   				index = $(".postTitle").index(this);
-   				postNo = $(".postNo:eq("+index+")")[0].innerHTML;
-   				getPostContent();
-   				getCommentList();
-   				replySaveClick();
-   				$('.cmtNo').hide();
-   				$(document).off('click',".cmtDelete").on("click", ".cmtDelete", function(){
-   		    		cmtIndex = $(".cmtDelete").index(this);
-   		    		cmtNo = Number($(".cmtNo:eq("+cmtIndex+")")[0].innerHTML);
-   		    		postNum = $(".postNo:eq("+index+")")[0].innerHTML;
-   		    		cmtDelete();
-   		    		$('.cmtNo').hide();
-   				})
-   			})
-   		}
-	    	
-    	function getPostContent(){
-    		console.log("postNo"+postNo);
-    		$.ajax({
-				type : "GET",
-				data : {
-					postNum: postNo
-				},
-				async: false,
-				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/getPostContent",
-				success : function(obj){
-					$(".blog-content").empty();
-					console.log(obj)
-					var postContent="";
-						for(var i=0; i<obj.length;i++){
-							console.log(obj[i]);
-							postContent += "<h4>"+obj[i]['postTitle']+"</h4>"
-							postContent += "<p>"+obj[i]['postContent']+"</p>"
-						}
-						$(".blog-content").append(postContent);
-				},
-				error : function(xhr,status,error){
-					alert(error+"에러");
-				}
-			})
-    	}
-			
-    	function getCommentList(){
-    		$.ajax({
-				type : "GET",
-				data : {
-					postNum: postNo
-				},
-				async: false,
-				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/getCommentsList",
-				success : function(obj){
-					$("#commentTable").empty();
-					console.log(obj)
-					var commentContent="";
-					commentContent += "<table class='commentTable'>"
-						for(var i=0; i<obj.length;i++){
-							console.log(obj[i]);
-							commentContent += "<tr class='commentTr'>"
-							commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
-							commentContent += "<td>"+obj[i]['coName']+"</td>"
-							commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
-							commentContent += "<td>"+obj[i]['regDate']+"</td>"
-							var userNo = '${authUser.userNo}';
-							if(userNo!=''){
-								if(userNo==obj[i]['userNo']){
-									commentContent += "<td class='cmtDelete'>X</td>"
-								}
-							}
-							commentContent += "</tr>"
-						}
-					commentContent += "</table>"
-					$("#commentTable").append(commentContent);
-				},
-				error : function(xhr,status,error){
-					alert(error+"에러");
-				}
-			})
-		}
-	    		
-		function replySaveClick(){
-			$(".replySave").off('click').on('click', function(e){
-				e.preventDefault();
-				replySave();
-			})
-		}		
 		
-    	function replySave(){
-    		var name = $(".name").text();
-    		var replyContent = $('.replyContent')[0].value;
-    		userNo = "${authUser.userNo}";
-    		$.ajax({
-				type : "GET",
-				data : {
-					postNum: postNo,
-					name: name,
-					replyContent: replyContent,
-					userNum: userNo
-				},
-				async: false,
-				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/addReply",
-				success : function(obj){
-					console.log(obj)
-					var commentContent="";
-						commentContent += "<tr>";
-						commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
-						commentContent += "<td>"+obj['coName']+"</td>"
-						commentContent += "<td>"+obj['cmtContent']+"</td>"
-						commentContent += "<td>"+obj['regDate']+"</td>"
-						var userNo = '${authUser.userNo}';
-						if(userNo!=''){
-							if(userNo==obj['userNo']){
-								commentContent += "<td class='cmtDelete'>X</td>"
-							}
-						}
-						commentContent += "</tr>";
-						$(".commentTable").prepend(commentContent);
-				},
-				error : function(xhr,status,error){
-					alert(error+"에러");
-				}
-			})
-    	}
-    	
-    	function cmtDelete(){
-    		postNum = postNum;
-    		$.ajax({
-				type : "POST",
-				data : {
-					cmtNum: cmtNo,
-					PostNum: postNum
-				},
-				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/cmtDelete",
-				async: false,
-				success : function(obj){
-					console.log(obj)
-					$('.commentTable').empty();
-					for(var i=0; i<obj.length;i++){
-						var commentContent="";
-						commentContent += "<tr>";
-						commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
-						commentContent += "<td>"+obj[i]['coName']+"</td>"
-						commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
-						commentContent += "<td>"+obj[i]['regDate']+"</td>"
-						var userNo = '${authUser.userNo}';
-						var userNo = '${authUser.userNo}';
-						if(userNo!=''){
-							if(userNo==obj[i]['userNo']){
-								commentContent += "<td class='cmtDelete'>X</td>"
-							}
-						}
-						commentContent += "</tr>";
-						$(".commentTable").append(commentContent);
-					}
-				},
-				error : function(xhr,status,error){
-					alert(error+"에러");
-				}
-			})
-    	}
-			
+		
+	    	
 	    $('.postNo').hide();
-	    $(".postTitle").off('click').on('click', function(e) {
-	    	index = $(".postTitle").index(this);
-	    	postNo = $(".postNo:eq("+index+")")[0].innerHTML;
-	    	e.preventDefault();
-	    	getPostContent();
-	    	$('.cmtNo').hide();
-	    	getCommentList();
-	    	replySaveClick();
-	    	$('.cmtNo').hide();
-	    	$(document).off('click',".cmtDelete").on("click", ".cmtDelete", function(){
-	    		cmtIndex = $(".cmtDelete").index(this);
-	    		cmtNo = Number($(".cmtNo:eq("+cmtIndex+")")[0].innerHTML);
-	    		postNum = $(".postNo:eq("+index+")")[0].innerHTML;
-	    		cmtDelete();
-	    		$('.cmtNo').hide();
-			})
-	    });
+	    postTitleClick();
+	    function postTitleClick(){
+		    $(".postTitle").off('click').on('click', function(e) {
+		    	index = $(".postTitle").index(this);
+		    	postNo = $(".postNo:eq("+index+")")[0].innerHTML;
+		    	e.preventDefault();
+		    	getPostContent();
+		    	$('.cmtNo').hide();
+		    	getCommentList();
+		    	replySaveClick();
+		    	$('.cmtNo').hide();
+		    	deleteClick();
+		    });
+	    }
+	    
     	function getPostContent(){
     		console.log("postNo"+postNo);
     		$.ajax({
@@ -299,6 +123,7 @@
 				async: false,
 				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/getCommentsList",
 				success : function(obj){
+					$("#commentTable").empty();
 					console.log(obj)
 					var commentContent="";
 					commentContent += "<table class='commentTable'>"
@@ -334,49 +159,11 @@
 			})
 		}
 				
+    	replySaveClick();
+    	
     	function replySave(){
     		var name = $(".name").text();
     		var replyContent = $('.replyContent')[0].value;
-    		userNo = "${authUser.userNo}";
-    		$.ajax({
-				type : "GET",
-				data : {
-					postNum: postNo,
-					name: name,
-					replyContent: replyContent,
-					userNum: userNo
-				},
-				async: false,
-				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/addReply",
-				success : function(obj){
-					console.log(obj)
-					var commentContent="";
-					commentContent += "<tr>";
-					commentContent += "<td class='cmtNo'>"+obj['cmtNo']+"</td>"
-					commentContent += "<td>"+obj['coName']+"</td>"
-					commentContent += "<td>"+obj['cmtContent']+"</td>"
-					commentContent += "<td>"+obj['regDate']+"</td>"
-					var userNo = '${authUser.userNo}';
-					if(userNo!=''){
-						if(userNo==obj['userNo']){
-							commentContent += "<td class='cmtDelete'>X</td>"
-						}
-					}
-					commentContent += "</tr>";
-					$(".commentTable").prepend(commentContent);
-				},
-				error : function(xhr,status,error){
-					alert(error+"에러");
-				}
-			})
-			
-    	}
-    	
-    	
-    	function replyFirstSave(){
-    		var name = $(".name").text();
-    		var replyContent = $('.replyContent')[0].value;
-    		var postNo = $(".postNo:eq(0)")[0].innerHTML;
     		userNo = "${authUser.userNo}";
     		$.ajax({
 				type : "GET",
@@ -412,47 +199,27 @@
 			
     	}
     	
-    	function cmtDelete(){
-    		postNum = postNum;
-    		$.ajax({
-				type : "POST",
-				data : {
-					cmtNum: cmtNo,
-					PostNum: postNum
-				},
-				url : "${pageContext.servletContext.contextPath}/${blogVo.userNo}/cmtDelete",
-				async: false,
-				success : function(obj){
-					console.log(obj)
-					$('.commentTable').empty();
-					for(var i=0; i<obj.length;i++){
-						var commentContent="";
-						commentContent += "<tr>";
-						commentContent += "<td class='cmtNo'>"+obj[i]['cmtNo']+"</td>"
-						commentContent += "<td>"+obj[i]['coName']+"</td>"
-						commentContent += "<td>"+obj[i]['cmtContent']+"</td>"
-						commentContent += "<td>"+obj[i]['regDate']+"</td>"
-						var userNo = '${authUser.userNo}';
-						if(userNo!=''){
-							if(userNo==obj[i]['userNo']){
-								commentContent += "<td class='cmtDelete'>X</td>"
-							}
-						}
-						commentContent += "</tr>";
-						$(".commentTable").append(commentContent);
-					}
-				},
-				error : function(xhr,status,error){
-					alert(error+"에러");
-				}
+    	function deleteClick(){
+    		$(document).off('click',".cmtDelete").on("click", ".cmtDelete", function(){
+	    		cmtIndex = $(".cmtDelete").index(this);
+	    		cmtNo = Number($(".cmtNo:eq("+cmtIndex+")")[0].innerHTML);
+	    		postNum = $(".postNo:eq("+index+")")[0].innerHTML;
+	    		cmtDelete();
+	    		$('.cmtNo').hide();
 			})
     	}
     	
-    	if($(".postNo:eq(0)")[0]!=undefined){
-    		postNum = Number($(".postNo:eq(0)")[0].innerHTML);	
-    	}
-		
-		function firstDeleteCmt(){
+    	$(document).off('click',".cmtDelete").on("click", ".cmtDelete", function(){
+    		cmtIndex = $(".cmtDelete").index(this);
+    		cmtNo = Number($(".cmtNo:eq("+cmtIndex+")")[0].innerHTML);
+    		if($(".postNo:eq(0)")[0]!=undefined){
+        		postNum = Number($(".postNo:eq(0)")[0].innerHTML);	
+        	}
+    		cmtDelete();
+    		$('.cmtNo').hide();
+		})
+    	
+		function cmtDelete(){
 			
     		$.ajax({
 				type : "POST",
@@ -572,7 +339,7 @@
 									<td>${commentsVo.cmtContent}</td>
 									<td>${commentsVo.regDate}</td>
 									<c:choose>
-										<c:when test="${authUser.no eq vo.user_no and authUser ne null}">
+										<c:when test="${authUser.userNo eq commentsVo.userNo and authUser ne null}">
 											<td class="cmtDelete">X</td>
 										</c:when>
 										<c:otherwise>
